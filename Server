@@ -1,0 +1,45 @@
+import socket
+import threading
+
+def client_handler(client_sock):
+    try:
+        while True:
+            # Получение данных от клиента
+            data = client_sock.recv(1024)
+            if not data:
+                # Клиент разорвал соединение
+                break
+            print(f"Данные от клиента: {data.decode('utf-8')}")
+
+            # Эхо-ответ клиенту
+            client_sock.send(data)
+
+    except Exception as err:
+        print(f"Возникла ошибка: {err}")
+
+    finally:
+        # Завершение соединения с клиентом
+        print("Соединение с клиентом завершено.")
+        client_sock.close()
+
+def run_server():
+  host = "localhost"
+  port = 12345
+
+  # Инициализация сокета
+  server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  server_sock.bind((host, port))
+  server_sock.listen(1)
+
+  print(f"Сервер работает на {host}:{port}")
+
+  while True:
+      client_sock, address = server_sock.accept()
+      print(f"Клиент подключен: {address[0]}:{address[1]}")
+
+      # Создание потока для обработки клиента
+      thread = threading.Thread(target=client_handler, args=(client_sock,))
+      thread.start()
+
+if __name__ == "__main__":
+    run_server()
